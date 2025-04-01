@@ -1,84 +1,84 @@
 import 'package:flutter/material.dart';
-import 'tile.dart';
+import 'package:harta_catan/tile.dart';
 
 class HexTile extends StatelessWidget {
   final Tile tile;
   final double size;
+  const HexTile({super.key, required this.tile, required this.size});
 
-  const HexTile({super.key, required this.tile, this.size = 60});
-
-  Color _getColor(){
+  String _getImagePath(){
     switch(tile.resource){
-      case 'Forest':
-        return Colors.green;
-      case 'Pasture':
-        return Colors.lightGreen;
-      case 'Field':
-        return Colors.yellow;
-      case 'Hill':
-        return Colors.red;
-      case 'Mountain':
-        return Colors.grey;
+     case 'Piatra':
+       return 'assets/piatra.png';
+     case 'Argila':
+       return 'assets/argila.png';
+      case 'Grau':
+         return 'assets/grau.png';
+      case 'Lemn':
+        return 'assets/lemn.png';
+      case 'Oaie':
+        return 'assets/oaie.png';
       case 'Desert':
-        return Colors.brown;
+        return 'assets/desert.png';
       default:
-        return Colors.white;
+        return '';
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: HexPainter( color: _getColor()),
-      child: SizedBox(
-        width: size,
-        height: size,
-        child: FittedBox(
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children:[
-                  Text(
-                    tile.resource,
-                    style: const TextStyle(fontSize:8),
-                    textAlign: TextAlign.center,
-                  ),
-                  if(tile.number != null)
-                    Text('${tile.number}',
-                      style: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.bold),
-                    )
-                ]
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        ClipPath(
+          clipper: HexClipper(),
+          child: Image.asset(
+            _getImagePath(),
+            width: size,
+            height: size,
+            fit: BoxFit.cover,
+          ),
+    ),
+          if(tile.number != null)
+            Container(
+              padding: const EdgeInsets.all(8), //spatiu cifra-margne
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  border: Border.all(color: Colors. black, width: 2),
+              ),
+              child: Text(
+                tile.number.toString(),
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: (tile.number == 8 || tile.number == 6)
+                    ?Colors.red
+                      :Colors.black,
+                )
+              )
             )
-        )
-
-      )
+      ],
     );
   }
 }
-class HexPainter extends CustomPainter{
-  final Color color;
-  HexPainter({required this.color});
 
+class HexClipper extends CustomClipper<Path>{
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color;
+  Path getClip(Size size) {
     final path = Path();
-
-    double w = size.width;
-    double h = size.height;
-
-    path.moveTo(w * 0.5, 0);
-    path.lineTo(w,h*0.25);
-    path.lineTo(w, h*0.75);
-    path.lineTo(w*0.5,h);
-    path.lineTo(0,h*0.75);
-    path.lineTo(0,h*0.25);
+    path.moveTo(size.width/2,0);
+    path.lineTo(size.width,0.25*size.height);
+    path.lineTo(size.width,0.75*size.height);
+    path.lineTo(size.width/2,size.height);
+    path.lineTo(0, 0.75*size.height);
+    path.lineTo(0,0.25*size.height);
     path.close();
-
-    canvas.drawPath(path,paint);
-
+    return path;
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+  
 }
