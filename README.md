@@ -11,7 +11,8 @@ A new Flutter project.
 COMMIT 2:
 Am facut harta cu texturi atasate in assets, ma pus cercuri in jurul numerelor si am facut numerele 6,8 cu rosu.
 
-Am pus tile-urile una langa alta si am facut astfel incat sa se vada corect dimensionat pe web si pe telefon
+Am pus tile-urile una langa alta si am facut astfel incat sa se vada corect dimensionat pe web si pe telefo
+
 ![image](https://github.com/user-attachments/assets/26c74308-064c-4116-af98-64ec0129507a)
 
 ![image](https://github.com/user-attachments/assets/59a6552e-85e6-4e4c-ba6a-aaa3064fe287)
