@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "797556281437",
+    "project_id": "harta-catan",
+    "storage_bucket": "harta-catan.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:797556281437:android:962a17300be0fb7f52bdb4",
+        "android_client_info": {
+          "package_name": "com.example.harta_catan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMXpDmYq915snEasH48pHUuBYbOi86fuQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
