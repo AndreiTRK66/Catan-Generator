@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:harta_catan/constants/resource.dart';
 
-class Tile{
-  final String resource;
+class Tile {
+  final Resource resource;
   final int? number;
 
   Tile({required this.resource, required this.number});
