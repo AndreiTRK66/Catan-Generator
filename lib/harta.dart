@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:harta_catan/constants/resource.dart';
 import 'package:harta_catan/constants/routes.dart';
 import 'package:harta_catan/tile.dart';
 import 'package:harta_catan/utilities/show_logout.dart';
@@ -14,26 +15,16 @@ class CatanHomePage extends StatefulWidget {
 }
 
 class _CatanHomePageState extends State<CatanHomePage> {
-  final List<String> resources = [
-    'Grau',
-    'Grau',
-    'Grau',
-    'Grau',
-    'Argila',
-    'Argila',
-    'Argila',
-    'Piatra',
-    'Piatra',
-    'Piatra',
-    'Lemn',
-    'Lemn',
-    'Lemn',
-    'Lemn',
-    'Oaie',
-    'Oaie',
-    'Oaie',
-    'Oaie',
-    'Desert',
+  bool _isLoading = true;
+  bool _hasError = false;
+
+  final List<Resource> resources = [
+    ...List.filled(4, Resource.grau),
+    ...List.filled(4, Resource.oaie),
+    ...List.filled(4, Resource.lemn),
+    ...List.filled(3, Resource.argila),
+    ...List.filled(3, Resource.piatra),
+    Resource.desert,
   ];
   final List<int> numbers = [
     2,
@@ -55,42 +46,54 @@ class _CatanHomePageState extends State<CatanHomePage> {
     11,
     12,
   ];
-  List<Tile> generatedMap = [];
+  List<Tile> generatedList = [];
 
   @override
   void initState() {
     super.initState();
-    _generateMap();
+    _generateList();
   }
 
-  void _generateMap() {
-    final resourceCopy = List<String>.from(resources);
-    final numberCopy = List<int>.from(numbers);
-
-    resourceCopy.shuffle();
-    numberCopy.shuffle();
-    List<Tile> tiles = [];
-    int numberIndex = 0;
-    for (var res in resourceCopy) {
-      if (res == 'Desert') {
-        tiles.add(Tile(resource: 'Desert', number: null));
-      } else {
-        tiles.add(Tile(resource: res, number: numberCopy[numberIndex]));
-        numberIndex++;
-      }
-    }
+  void _generateList() {
     setState(() {
-      generatedMap = tiles;
+      _isLoading = true;
+      _hasError = false;
     });
+    try {
+      final resourceCopy = List<Resource>.from(resources);
+      final numberCopy = List<int>.from(numbers);
+
+      resourceCopy.shuffle();
+      numberCopy.shuffle();
+      List<Tile> tiles = [];
+      int numberIndex = 0;
+      for (var res in resourceCopy) {
+        if (res == Resource.desert) {
+          tiles.add(Tile(resource: res, number: null));
+        } else {
+          tiles.add(Tile(resource: res, number: numberCopy[numberIndex]));
+          numberIndex++;
+        }
+      }
+      setState(() {
+        generatedList = tiles;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    final tileSize = (screenWidth / 6).clamp(89, 140).toDouble();
-    final horizontalSpacing = tileSize * 0.92;
-    final verticalSpacing = tileSize * 0.76;
+    final tileSize = (screenWidth / 6).clamp(lowerLimit, upperLimit).toDouble();
+    final horizontalSpacing = tileSize * offsetHorizontalSpacing;
+    final verticalSpacing = tileSize * offsetVerticalSpacing;
 
     return Scaffold(
       appBar: AppBar(
@@ -128,16 +131,21 @@ class _CatanHomePageState extends State<CatanHomePage> {
           ),
         ],
       ),
-      body:
-          generatedMap.isEmpty
-              ? const Center(child: CircularProgressIndicator())
-              : Container(
+      body: Builder(
+        builder: (context) {
+          if (_isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else {
+            if (_hasError) {
+              return const Center(child: Text('Something went wrong'));
+            } else {
+              return Container(
                 width: screenWidth,
                 height: screenHeight,
                 color: Colors.white,
                 child: Stack(
                   children: [
-                    ...List.generate(generatedMap.length, (index) {
+                    ...List.generate(generatedList.length, (index) {
                       int row = 0;
                       int col = 0;
                       double offset = 0;
@@ -171,7 +179,7 @@ class _CatanHomePageState extends State<CatanHomePage> {
                         left: dx,
                         top: dy,
                         child: HexTile(
-                          tile: generatedMap[index],
+                          tile: generatedList[index],
                           size: tileSize,
                         ),
                       );
@@ -182,14 +190,18 @@ class _CatanHomePageState extends State<CatanHomePage> {
                       right: 0,
                       child: Center(
                         child: ElevatedButton(
-                          onPressed: _generateMap,
+                          onPressed: _generateList,
                           child: const Text('Genereaza Harta'),
                         ),
                       ),
                     ),
                   ],
                 ),
-              ),
+              );
+            }
+          }
+        },
+      ),
     );
   }
 }
