@@ -41,26 +41,79 @@ class HexTile extends StatelessWidget {
         ),
         if (tile.number != null)
           Container(
-            padding: const EdgeInsets.all(8), //spatiu cifra-margne
+            height: size / numberSizeDiv,
+            width: size / numberSizeDiv,
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white,
-              border: Border.all(color: Colors.black, width: 3),
+              color: Color(0xFFFFF9C4),
+              border: Border.all(color: Colors.black, width: 1),
             ),
-            child: Text(
-              tile.number.toString(),
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color:
-                    (tile.number == 8 || tile.number == 6)
-                        ? Colors.red
-                        : Colors.black,
-              ),
+            child: Column(
+              //mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                FittedBox(
+                  fit: BoxFit.contain,
+                  child: Text(
+                    tile.number.toString(),
+                    style: TextStyle(
+                      fontSize: size * numberFontSizeDiv,
+                      fontWeight: FontWeight.w900,
+                      height: numberHeight,
+                      fontFamily: 'Roboto',
+                      color:
+                          (tile.number == 8 || tile.number == 6)
+                              ? Colors.red
+                              : Colors.black,
+                    ),
+                  ),
+                ),
+
+                FittedBox(
+                  fit: BoxFit.contain,
+                  child: Text(
+                    '•' * _getDotCount(tile.number),
+                    style: TextStyle(
+                      fontSize: size * dotFontSizeDiv,
+                      height: numberHeight,
+                      letterSpacing: 2,
+                      fontWeight: FontWeight.bold,
+                      color:
+                          (tile.number == 8 || tile.number == 6)
+                              ? Colors.red
+                              : Colors.black,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
       ],
     );
+  }
+
+  int _getDotCount(int? number) {
+    switch (number) {
+      case 6:
+      case 8:
+        return 5;
+      case 5:
+      case 9:
+        return 4;
+      case 4:
+      case 10:
+        return 3;
+      case 3:
+      case 11:
+        return 2;
+      case 2:
+      case 12:
+        return 1;
+      default:
+        return 0;
+    }
   }
 }
 
