@@ -6,3 +6,11 @@ class Tile {
 
   Tile({required this.resource, required this.number});
 }
+
+class PlacedTile {
+  final Tile tiles;
+  final int row;
+  final int col;
+
+  PlacedTile({required this.tiles, required this.row, required this.col});
+}

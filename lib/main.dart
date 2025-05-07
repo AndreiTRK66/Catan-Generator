@@ -42,6 +42,7 @@ class HomePage extends StatelessWidget {
         switch (snapshot.connectionState) {
           case ConnectionState.done:
             final user = FirebaseAuth.instance.currentUser;
+
             if (user != null) {
               if (user.emailVerified) {
                 return const CatanHomePage();

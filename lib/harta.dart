@@ -17,6 +17,10 @@ class CatanHomePage extends StatefulWidget {
 class _CatanHomePageState extends State<CatanHomePage> {
   bool _isLoading = true;
   bool _hasError = false;
+  bool checkboxValue1 = false;
+  bool checkboxValue2 = true;
+  bool checkboxValue3 = true;
+  bool checkboxValue4 = true;
 
   final List<Resource> resources = [
     ...List.filled(4, Resource.grau),
@@ -46,8 +50,8 @@ class _CatanHomePageState extends State<CatanHomePage> {
     11,
     12,
   ];
-  List<Tile> generatedList = [];
-
+  List<PlacedTile> generatedList = [];
+  List<PlacedTile> finalPlacedTile = [];
   @override
   void initState() {
     super.initState();
@@ -63,20 +67,63 @@ class _CatanHomePageState extends State<CatanHomePage> {
       final resourceCopy = List<Resource>.from(resources);
       final numberCopy = List<int>.from(numbers);
 
-      resourceCopy.shuffle();
-      numberCopy.shuffle();
-      List<Tile> tiles = [];
-      int numberIndex = 0;
-      for (var res in resourceCopy) {
-        if (res == Resource.desert) {
-          tiles.add(Tile(resource: res, number: null));
-        } else {
-          tiles.add(Tile(resource: res, number: numberCopy[numberIndex]));
-          numberIndex++;
+      int count = 0;
+      while (count < 1000000) {
+        resourceCopy.shuffle();
+        numberCopy.shuffle();
+        List<PlacedTile> placedTile = [];
+        int numberIndex = 0;
+        int tileIndex = 0;
+
+        for (var res in resourceCopy) {
+          int row = 0;
+          int col = 0;
+          if (tileIndex < 3) {
+            row = 0;
+            col = tileIndex;
+          } else if (tileIndex < 7) {
+            row = 1;
+            col = tileIndex - 3;
+          } else if (tileIndex < 12) {
+            row = 2;
+            col = tileIndex - 7;
+          } else if (tileIndex < 16) {
+            row = 3;
+            col = tileIndex - 12;
+          } else {
+            row = 4;
+            col = tileIndex - 16;
+          }
+          if (res == Resource.desert) {
+            placedTile.add(
+              PlacedTile(
+                tiles: Tile(resource: res, number: null),
+                row: row,
+                col: col,
+              ),
+            );
+          } else {
+            placedTile.add(
+              PlacedTile(
+                tiles: Tile(resource: res, number: numberCopy[numberIndex]),
+                row: row,
+                col: col,
+              ),
+            );
+
+            numberIndex++;
+          }
+          tileIndex++;
         }
+        if (isValidMap(placedTile)) {
+          finalPlacedTile = placedTile;
+          print('Count = $count');
+          break;
+        }
+        count++;
       }
       setState(() {
-        generatedList = tiles;
+        generatedList = finalPlacedTile;
         _isLoading = false;
       });
     } catch (e) {
@@ -85,6 +132,103 @@ class _CatanHomePageState extends State<CatanHomePage> {
         _isLoading = false;
       });
     }
+  }
+
+  bool isValidMap(List<PlacedTile> placedTile) {
+    for (final tile in placedTile) {
+      final currentNumber = tile.tiles.number;
+      final currentResource = tile.tiles.resource;
+
+      if (currentNumber == null) {
+        continue;
+      }
+      final neighbors = getNeighbors(tile.row, tile.col, placedTile);
+      for (final neighbor in neighbors) {
+        final neighborNumber = neighbor.tiles.number;
+        final neighborResource = neighbor.tiles.resource;
+
+        if (neighborNumber == null) {
+          continue;
+        }
+        if (currentNumber == 6 && neighborNumber == 6) {
+          return false;
+        }
+        if (currentNumber == 8 && neighborNumber == 8) {
+          return false;
+        }
+        if (!checkboxValue1) {
+          if ((currentNumber == 8 && neighborNumber == 6) ||
+              (currentNumber == 6 && neighborNumber == 8)) {
+            return false;
+          }
+        }
+        if (!checkboxValue2) {
+          if ((currentNumber == 2 && neighborNumber == 12) ||
+              (currentNumber == 12 && neighborNumber == 2)) {
+            return false;
+          }
+        }
+        if (!checkboxValue3) {
+          if (currentNumber == neighborNumber) {
+            return false;
+          }
+        }
+        if (!checkboxValue4) {
+          if (currentResource == neighborResource) {
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
+  }
+
+  List<PlacedTile> getNeighbors(int row, int col, List<PlacedTile> allTiles) {
+    final List<PlacedTile> neighbors = [];
+    final List<List<int>> offsets;
+
+    if (row <= 1) {
+      offsets = [
+        [0, -1],
+        [0, 1],
+        [-1, -1],
+        [-1, 0],
+        [1, 0],
+        [1, 1],
+      ];
+    } else if (row == 2) {
+      offsets = [
+        [0, -1],
+        [0, 1],
+        [-1, -1],
+        [-1, 0],
+        [1, -1],
+        [1, 0],
+      ];
+    } else {
+      offsets = [
+        [0, -1],
+        [0, 1],
+        [-1, 0],
+        [-1, 1],
+        [1, -1],
+        [1, 0],
+      ];
+    }
+    for (final offset in offsets) {
+      final neighborRow = row + offset[0];
+      final neighborCol = col + offset[1];
+
+      final match = allTiles.where(
+        (tile) => tile.row == neighborRow && tile.col == neighborCol,
+      );
+      if (match.isNotEmpty) {
+        neighbors.add(match.first);
+      }
+    }
+
+    return neighbors;
   }
 
   @override
@@ -179,20 +323,85 @@ class _CatanHomePageState extends State<CatanHomePage> {
                         left: dx,
                         top: dy,
                         child: HexTile(
-                          tile: generatedList[index],
+                          tile: generatedList[index].tiles,
                           size: tileSize,
                         ),
                       );
                     }),
                     Positioned(
                       bottom: 30,
-                      left: 0,
+                      left: screenWidth / 6,
                       right: 0,
-                      child: Center(
-                        child: ElevatedButton(
-                          onPressed: _generateList,
-                          child: const Text('Genereaza Harta'),
-                        ),
+                      child: Row(
+                        children: [
+                          ElevatedButton(
+                            onPressed: () async {
+                              await showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return StatefulBuilder(
+                                    builder:
+                                        (context, setState) => AlertDialog(
+                                          content: Column(
+                                            children: [
+                                              CheckboxListTile(
+                                                title: const Text(
+                                                  '6 & 8 Can Touch',
+                                                ),
+                                                value: checkboxValue1,
+                                                onChanged: (bool? value) {
+                                                  setState(() {
+                                                    checkboxValue1 = value!;
+                                                  });
+                                                },
+                                              ),
+                                              CheckboxListTile(
+                                                title: const Text(
+                                                  '2 & 12 Can Touch',
+                                                ),
+                                                value: checkboxValue2,
+                                                onChanged: (bool? value) {
+                                                  setState(() {
+                                                    checkboxValue2 = value!;
+                                                  });
+                                                },
+                                              ),
+                                              CheckboxListTile(
+                                                title: const Text(
+                                                  'Same Numbers Can Touch',
+                                                ),
+                                                value: checkboxValue3,
+                                                onChanged: (bool? value) {
+                                                  setState(() {
+                                                    checkboxValue3 = value!;
+                                                  });
+                                                },
+                                              ),
+                                              CheckboxListTile(
+                                                title: const Text(
+                                                  'Same Resources Can Touch',
+                                                ),
+                                                value: checkboxValue4,
+                                                onChanged: (bool? value) {
+                                                  setState(() {
+                                                    checkboxValue4 = value!;
+                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                  );
+                                },
+                              );
+                            },
+                            child: const Text('      Options      '),
+                          ),
+                          ElevatedButton(
+                            onPressed: _generateList,
+                            child: const Text('Generate Map'),
+                          ),
+                        ],
                       ),
                     ),
                   ],
