@@ -10,15 +10,15 @@ class HexTile extends StatelessWidget {
 
   String _getImagePath() {
     switch (tile.resource) {
-      case Resource.piatra:
+      case Resource.rock:
         return 'assets/piatra.png';
-      case Resource.argila:
+      case Resource.brick:
         return 'assets/argila.png';
-      case Resource.grau:
+      case Resource.wheat:
         return 'assets/grau.png';
-      case Resource.lemn:
+      case Resource.wood:
         return 'assets/lemn.png';
-      case Resource.oaie:
+      case Resource.sheep:
         return 'assets/oaie.png';
       case Resource.desert:
         return 'assets/desert.png';

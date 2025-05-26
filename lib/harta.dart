@@ -17,17 +17,17 @@ class CatanHomePage extends StatefulWidget {
 class _CatanHomePageState extends State<CatanHomePage> {
   bool _isLoading = true;
   bool _hasError = false;
-  bool checkboxValue1 = false;
-  bool checkboxValue2 = true;
-  bool checkboxValue3 = true;
-  bool checkboxValue4 = true;
+  bool canTouch68 = false;
+  bool canTouch212 = true;
+  bool sameNumbers = true;
+  bool sameResources = true;
 
   final List<Resource> resources = [
-    ...List.filled(4, Resource.grau),
-    ...List.filled(4, Resource.oaie),
-    ...List.filled(4, Resource.lemn),
-    ...List.filled(3, Resource.argila),
-    ...List.filled(3, Resource.piatra),
+    ...List.filled(4, Resource.wheat),
+    ...List.filled(4, Resource.sheep),
+    ...List.filled(4, Resource.wood),
+    ...List.filled(3, Resource.brick),
+    ...List.filled(3, Resource.rock),
     Resource.desert,
   ];
   final List<int> numbers = [
@@ -50,8 +50,8 @@ class _CatanHomePageState extends State<CatanHomePage> {
     11,
     12,
   ];
-  List<PlacedTile> generatedList = [];
-  List<PlacedTile> finalPlacedTile = [];
+  List<PlacedTile> _generatedList = [];
+  List<PlacedTile> _finalPlacedTile = [];
   @override
   void initState() {
     super.initState();
@@ -63,6 +63,9 @@ class _CatanHomePageState extends State<CatanHomePage> {
       _isLoading = true;
       _hasError = false;
     });
+
+    final stopwatch = Stopwatch()..start();
+
     try {
       final resourceCopy = List<Resource>.from(resources);
       final numberCopy = List<int>.from(numbers);
@@ -71,9 +74,11 @@ class _CatanHomePageState extends State<CatanHomePage> {
       while (count < 1000000) {
         resourceCopy.shuffle();
         numberCopy.shuffle();
+
         List<PlacedTile> placedTile = [];
         int numberIndex = 0;
         int tileIndex = 0;
+        bool failed = false;
 
         for (var res in resourceCopy) {
           int row = 0;
@@ -94,36 +99,37 @@ class _CatanHomePageState extends State<CatanHomePage> {
             row = 4;
             col = tileIndex - 16;
           }
-          if (res == Resource.desert) {
-            placedTile.add(
-              PlacedTile(
-                tiles: Tile(resource: res, number: null),
-                row: row,
-                col: col,
-              ),
-            );
-          } else {
-            placedTile.add(
-              PlacedTile(
-                tiles: Tile(resource: res, number: numberCopy[numberIndex]),
-                row: row,
-                col: col,
-              ),
-            );
+          final newTile = PlacedTile(
+            tiles:
+                res == Resource.desert
+                    ? Tile(resource: res, number: null)
+                    : Tile(resource: res, number: numberCopy[numberIndex]),
+            row: row,
+            col: col,
+          );
 
-            numberIndex++;
+          if (res != Resource.desert) numberIndex++;
+
+          if (!isValidTile(newTile, placedTile)) {
+            failed = true;
+            break;
           }
+          placedTile.add(newTile);
           tileIndex++;
         }
-        if (isValidMap(placedTile)) {
-          finalPlacedTile = placedTile;
-          print('Count = $count');
-          break;
+        if (failed) {
+          count++;
+          continue;
         }
-        count++;
+        _finalPlacedTile = placedTile;
+        stopwatch.stop();
+        print(
+          'Harta generata in ${stopwatch.elapsedMilliseconds} ms (Count = $count)',
+        );
+        break;
       }
       setState(() {
-        generatedList = finalPlacedTile;
+        _generatedList = _finalPlacedTile;
         _isLoading = false;
       });
     } catch (e) {
@@ -132,6 +138,50 @@ class _CatanHomePageState extends State<CatanHomePage> {
         _isLoading = false;
       });
     }
+  }
+
+  bool isValidTile(PlacedTile tile, List<PlacedTile> placedTile) {
+    final currentNumber = tile.tiles.number;
+    final currentResource = tile.tiles.resource;
+
+    final neighbors = getNeighbors(tile.row, tile.col, placedTile);
+    for (final neighbor in neighbors) {
+      final neighborNumber = neighbor.tiles.number;
+      final neighborResource = neighbor.tiles.resource;
+      if (neighborNumber == null) {
+        continue;
+      }
+      if (currentNumber == 6 && neighborNumber == 6) {
+        return false;
+      }
+      if (currentNumber == 8 && neighborNumber == 8) {
+        return false;
+      }
+      if (!canTouch68) {
+        if ((currentNumber == 8 && neighborNumber == 6) ||
+            (currentNumber == 6 && neighborNumber == 8)) {
+          return false;
+        }
+      }
+      if (!canTouch212) {
+        if ((currentNumber == 2 && neighborNumber == 12) ||
+            (currentNumber == 12 && neighborNumber == 2)) {
+          return false;
+        }
+      }
+      if (!sameNumbers) {
+        if (currentNumber == neighborNumber) {
+          return false;
+        }
+      }
+      if (!sameResources) {
+        if (currentResource == neighborResource) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
   bool isValidMap(List<PlacedTile> placedTile) {
@@ -156,24 +206,24 @@ class _CatanHomePageState extends State<CatanHomePage> {
         if (currentNumber == 8 && neighborNumber == 8) {
           return false;
         }
-        if (!checkboxValue1) {
+        if (!canTouch68) {
           if ((currentNumber == 8 && neighborNumber == 6) ||
               (currentNumber == 6 && neighborNumber == 8)) {
             return false;
           }
         }
-        if (!checkboxValue2) {
+        if (!canTouch212) {
           if ((currentNumber == 2 && neighborNumber == 12) ||
               (currentNumber == 12 && neighborNumber == 2)) {
             return false;
           }
         }
-        if (!checkboxValue3) {
+        if (!sameNumbers) {
           if (currentNumber == neighborNumber) {
             return false;
           }
         }
-        if (!checkboxValue4) {
+        if (!sameResources) {
           if (currentResource == neighborResource) {
             return false;
           }
@@ -289,7 +339,7 @@ class _CatanHomePageState extends State<CatanHomePage> {
                 color: Colors.white,
                 child: Stack(
                   children: [
-                    ...List.generate(generatedList.length, (index) {
+                    ...List.generate(_generatedList.length, (index) {
                       int row = 0;
                       int col = 0;
                       double offset = 0;
@@ -323,7 +373,7 @@ class _CatanHomePageState extends State<CatanHomePage> {
                         left: dx,
                         top: dy,
                         child: HexTile(
-                          tile: generatedList[index].tiles,
+                          tile: _generatedList[index].tiles,
                           size: tileSize,
                         ),
                       );
@@ -348,10 +398,10 @@ class _CatanHomePageState extends State<CatanHomePage> {
                                                 title: const Text(
                                                   '6 & 8 Can Touch',
                                                 ),
-                                                value: checkboxValue1,
+                                                value: canTouch68,
                                                 onChanged: (bool? value) {
                                                   setState(() {
-                                                    checkboxValue1 = value!;
+                                                    canTouch68 = value!;
                                                   });
                                                 },
                                               ),
@@ -359,10 +409,10 @@ class _CatanHomePageState extends State<CatanHomePage> {
                                                 title: const Text(
                                                   '2 & 12 Can Touch',
                                                 ),
-                                                value: checkboxValue2,
+                                                value: canTouch212,
                                                 onChanged: (bool? value) {
                                                   setState(() {
-                                                    checkboxValue2 = value!;
+                                                    canTouch212 = value!;
                                                   });
                                                 },
                                               ),
@@ -370,10 +420,10 @@ class _CatanHomePageState extends State<CatanHomePage> {
                                                 title: const Text(
                                                   'Same Numbers Can Touch',
                                                 ),
-                                                value: checkboxValue3,
+                                                value: sameNumbers,
                                                 onChanged: (bool? value) {
                                                   setState(() {
-                                                    checkboxValue3 = value!;
+                                                    sameNumbers = value!;
                                                   });
                                                 },
                                               ),
@@ -381,10 +431,10 @@ class _CatanHomePageState extends State<CatanHomePage> {
                                                 title: const Text(
                                                   'Same Resources Can Touch',
                                                 ),
-                                                value: checkboxValue4,
+                                                value: sameResources,
                                                 onChanged: (bool? value) {
                                                   setState(() {
-                                                    checkboxValue4 = value!;
+                                                    sameResources = value!;
                                                   });
                                                 },
                                               ),

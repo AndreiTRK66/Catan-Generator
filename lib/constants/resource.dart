@@ -1,9 +1,9 @@
 enum Resource {
-  grau('Grau'),
-  oaie('Oaie'),
-  lemn('Lemn'),
-  argila('Argila'),
-  piatra('Piatra'),
+  wheat('Wheat'),
+  sheep('Sheep'),
+  wood('Wood'),
+  brick('Brick'),
+  rock('Rock'),
   desert('Desert');
 
   final String title;
